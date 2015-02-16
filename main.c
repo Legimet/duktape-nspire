@@ -43,6 +43,7 @@
 #include "duk_alloc_hybrid.h"
 #endif
 #include "duktape.h"
+#include "module.h"
 
 #ifdef DUK_CMDLINE_AJSHEAP
 /* Defined in duk_cmdline_ajduk.c or alljoyn.js headers. */
@@ -507,6 +508,8 @@ int main(int argc, char *argv[]) {
 	int debugger = 0;
 	int i;
 
+	enable_relative_paths(argv);
+
 #ifdef DUK_CMDLINE_AJSHEAP
 	alloc_provider = ALLOC_AJSHEAP;
 #endif
@@ -662,6 +665,10 @@ int main(int argc, char *argv[]) {
 	duk_push_global_object(ctx);
 	duk_push_c_function(ctx, exit_duktape, 1);
 	duk_put_prop_string(ctx, -2, "exit");
+	duk_get_prop_string(ctx, -1, "Duktape");
+	duk_push_c_function(ctx, module_search, 4);
+	duk_put_prop_string(ctx, -2, "modSearch");
+	duk_pop_2(ctx);
 
 	/*
 	 *  Execute any argument file(s)
