@@ -1,11 +1,11 @@
 /*
- *  Duktape public API for Duktape 1.1.99.
+ *  Duktape public API for Duktape 1.1.1.
  *  See the API reference for documentation on call semantics.
  *  The exposed API is inside the DUK_API_PUBLIC_H_INCLUDED
  *  include guard.  Other parts of the header are Duktape
  *  internal and related to platform/compiler/feature detection.
  *
- *  Git commit b209e450f0823b3fa4b6af10a4beea9035e5189f (v1.1.0-88-gb209e45).
+ *  Git commit b9c3896048c8ebcfef5f8d4b158f6df3aedece37 (v1.1.0-17-gb9c3896).
  *
  *  See Duktape AUTHORS.rst and LICENSE.txt for copyright and
  *  licensing information.
@@ -95,9 +95,6 @@
  *  * David Demelier (https://github.com/hftmarkand)
  *  * Tim Caswell (https://github.com/creationix)
  *  * Mitchell Blank Jr (https://github.com/mitchblank)
- *  * https://github.com/yushli
- *  * Seo Sanghyeon (https://github.com/sanxiyn)
- *  * Han ChoongWoo (https://github.com/tunz)
  *  
  *  If you are accidentally missing from this list, send me an e-mail
  *  (``sami.vaarala@iki.fi``) and I'll fix the omission.
@@ -314,10 +311,6 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_F_WINDOWS
 #endif
 
-#if defined(__APPLE__)
-#define DUK_F_APPLE
-#endif
-
 /* Atari ST TOS. __TOS__ defined by PureC (which doesn't work as a target now
  * because int is 16-bit, to be fixed).  No platform define in VBCC apparently,
  * so to use with VBCC, user must define '__TOS__' manually.
@@ -519,7 +512,6 @@ static __inline__ unsigned long long duk_rdtsc(void) {
 #define DUK_USE_DATE_TZO_GMTIME_R
 #define DUK_USE_DATE_PRS_STRPTIME
 #define DUK_USE_DATE_FMT_STRFTIME
-#include <TargetConditionals.h>
 #include <architecture/byte_order.h>
 #include <limits.h>
 #include <sys/param.h>
@@ -2193,23 +2185,6 @@ typedef FILE duk_file;
 #endif
 
 /*
- *  Byteswap macros
- *
- *  These are here so that inline assembly or other platform functions can be
- *  used if available.
- */
-
-#define DUK_BSWAP32(x) \
-	((((duk_uint32_t) (x)) >> 24) | \
-	 ((((duk_uint32_t) (x)) >> 8) & 0xff00UL) | \
-	 ((((duk_uint32_t) (x)) << 8) & 0xff0000UL) | \
-	 (((duk_uint32_t) (x)) << 24))
-
-#define DUK_BSWAP16(x) \
-	((duk_uint16_t) (x) >> 8) | \
-	((duk_uint16_t) (x) << 8)
-
-/*
  *  Architecture string, human readable value exposed in Duktape.env
  */
 
@@ -2241,17 +2216,6 @@ typedef FILE duk_file;
 
 #if defined(DUK_F_LINUX)
 #define DUK_USE_OS_STRING "linux"
-#elif defined(__APPLE__)
-/* http://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor */
-#if TARGET_IPHONE_SIMULATOR
-#define DUK_USE_OS_STRING "iphone-sim"
-#elif TARGET_OS_IPHONE
-#define DUK_USE_OS_STRING "iphone"
-#elif TARGET_OS_MAC
-#define DUK_USE_OS_STRING "ios"
-#else
-#define DUK_USE_OS_STRING "ios-unknown"
-#endif
 #elif defined(DUK_F_FREEBSD)
 #define DUK_USE_OS_STRING "freebsd"
 #elif defined(DUK_F_OPENBSD)
@@ -2331,26 +2295,6 @@ typedef FILE duk_file;
 #else
 #error internal error
 #endif
-
-/*
- *  Target info string
- */
-
-#if defined(DUK_OPT_TARGET_INFO)
-#define DUK_USE_TARGET_INFO DUK_OPT_TARGET_INFO
-#else
-#define DUK_USE_TARGET_INFO "unknown"
-#endif
-
-/*
- *  General prefer speed/size flag
- *
- *  Catch-all flag which can be used to choose between variant algorithms
- *  where a speed-size tradeoff exists (e.g. lookup tables).  When it really
- *  matters, specific use flags may be appropriate.
- */
-
-#define DUK_USE_PREFER_SIZE
 
 /*
  *  Tagged type representation (duk_tval)
@@ -2459,38 +2403,15 @@ typedef FILE duk_file;
  *  Execution and debugger options
  */
 
-#undef DUK_USE_INTERRUPT_COUNTER
-#if defined(DUK_OPT_INTERRUPT_COUNTER)
+/* Executor interrupt disabled for 1.0 release: there is no API to use it */
+#if 0
 #define DUK_USE_INTERRUPT_COUNTER
+#if defined(DUK_OPT_NO_INTERRUPT_COUNTER)
+#undef DUK_USE_INTERRUPT_COUNTER
+#endif
 #endif
 
-#undef DUK_USE_EXEC_TIMEOUT_CHECK
-#if defined(DUK_OPT_EXEC_TIMEOUT_CHECK)
-#define DUK_USE_EXEC_TIMEOUT_CHECK(udata)  DUK_OPT_EXEC_TIMEOUT_CHECK((udata))
-#endif
-
-#undef DUK_USE_DEBUGGER_SUPPORT
-#if defined(DUK_OPT_DEBUGGER_SUPPORT)
-#define DUK_USE_DEBUGGER_SUPPORT
-#endif
-
-#undef DUK_USE_DEBUGGER_FWD_PRINTALERT
-#if defined(DUK_OPT_DEBUGGER_SUPPORT) && defined(DUK_OPT_DEBUGGER_FWD_PRINTALERT)
-#define DUK_USE_DEBUGGER_FWD_PRINTALERT
-#endif
-
-#undef DUK_USE_DEBUGGER_FWD_LOGGING
-#if defined(DUK_OPT_DEBUGGER_SUPPORT) && defined(DUK_OPT_DEBUGGER_FWD_LOGGING)
-#define DUK_USE_DEBUGGER_FWD_LOGGING
-#endif
-
-/* DumpHeap is optional because it's not always needed and has a relatively
- * large footprint.
- */
-#undef DUK_USE_DEBUGGER_DUMPHEAP
-#if defined(DUK_OPT_DEBUGGER_DUMPHEAP)
-#define DUK_USE_DEBUGGER_DUMPHEAP
-#endif
+#undef DUK_USE_INTERRUPT_COUNTER
 
 /* For opcodes with indirect indices, check final index against stack size.
  * This should not be necessary because the compiler is trusted, and we don't
@@ -3064,12 +2985,6 @@ typedef void (*duk_fatal_function) (duk_context *ctx, duk_errcode_t code, const 
 typedef void (*duk_decode_char_function) (void *udata, duk_codepoint_t codepoint);
 typedef duk_codepoint_t (*duk_map_char_function) (void *udata, duk_codepoint_t codepoint);
 typedef duk_ret_t (*duk_safe_call_function) (duk_context *ctx);
-typedef duk_size_t (*duk_debug_read_function) (void *udata, char *buffer, duk_size_t length);
-typedef duk_size_t (*duk_debug_write_function) (void *udata, const char *buffer, duk_size_t length);
-typedef duk_size_t (*duk_debug_peek_function) (void *udata);
-typedef void (*duk_debug_read_flush_function) (void *udata);
-typedef void (*duk_debug_write_flush_function) (void *udata);
-typedef void (*duk_debug_detached_function) (void *udata);
 
 struct duk_memory_functions {
 	duk_alloc_function alloc_func;
@@ -3099,16 +3014,13 @@ struct duk_number_list_entry {
  * have 99 for patch level (e.g. 0.10.99 would be a development version
  * after 0.10.0 but before the next official release).
  */
-#define DUK_VERSION                       10199L
+#define DUK_VERSION                       10101L
 
 /* Git describe for Duktape build.  Useful for non-official snapshot builds
  * so that application code can easily log which Duktape snapshot was used.
  * Not available in the Ecmascript environment.
  */
-#define DUK_GIT_DESCRIBE                  "v1.1.0-88-gb209e45"
-
-/* Duktape debug protocol version used by this build. */
-#define DUK_DEBUG_PROTOCOL_VERSION        1
+#define DUK_GIT_DESCRIBE                  "v1.1.0-17-gb9c3896"
 
 /* Used to represent invalid index; if caller uses this without checking,
  * this index will map to a non-existent stack entry.  Also used in some
@@ -3879,20 +3791,6 @@ DUK_EXTERNAL_DECL void duk_push_context_dump(duk_context *ctx);
 #endif  /* DUK_USE_FILE_IO */
 
 /*
- *  Debugger (debug protocol)
- */
-
-DUK_EXTERNAL_DECL void duk_debugger_attach(duk_context *ctx,
-                                           duk_debug_read_function read_cb,
-                                           duk_debug_write_function write_cb,
-                                           duk_debug_peek_function peek_cb,
-                                           duk_debug_read_flush_function read_flush_cb,
-                                           duk_debug_write_flush_function write_flush_cb,
-                                           duk_debug_detached_function detached_cb,
-                                           void *udata);
-DUK_EXTERNAL_DECL void duk_debugger_detach(duk_context *ctx);
-
-/*
  *  C++ name mangling
  */
 
@@ -3972,19 +3870,6 @@ DUK_EXTERNAL_DECL void duk_debugger_detach(duk_context *ctx);
 #if defined(DUK_USE_HEAPPTR16) && defined(DUK_USE_DEBUG)
 /* Debug code doesn't have access to 'heap' so it cannot decode pointers. */
 #error debug printing cannot currently be used with heap pointer compression
-#endif
-
-/*
- *  Debugger consistency
- */
-
-#if defined(DUK_USE_DEBUGGER_SUPPORT)
-#if !defined(DUK_USE_INTERRUPT_COUNTER)
-#error DUK_USE_INTERRUPT_COUNTER is needed when debugger support is enabled
-#endif
-#if !defined(DUK_USE_PC2LINE)
-#error DUK_USE_PC2LINE is needed when debugger support is enabled
-#endif
 #endif
 
 /*
@@ -4328,33 +4213,6 @@ typedef union duk_double_union duk_double_union;
 		(u)->d = DUK_DOUBLE_NAN; \
 	} while (0)
 #endif  /* DUK_USE_PACKED_TVAL */
-
-/* Byteswap an (aligned) duk_double_union. */
-#if defined(DUK_USE_DOUBLE_LE)
-#define DUK_DBLUNION_BSWAP(u) do { \
-		duk_uint32_t duk__bswaptmp1, duk__bswaptmp2; \
-		duk__bswaptmp1 = (u)->ui[0]; \
-		duk__bswaptmp2 = (u)->ui[1]; \
-		duk__bswaptmp1 = DUK_BSWAP32(duk__bswaptmp1); \
-		duk__bswaptmp2 = DUK_BSWAP32(duk__bswaptmp2); \
-		(u)->ui[0] = duk__bswaptmp2; \
-		(u)->ui[1] = duk__bswaptmp1; \
-	} while (0)
-#elif defined(DUK_USE_DOUBLE_ME)
-#define DUK_DBLUNION_BSWAP(u) do { \
-		duk_uint32_t duk__bswaptmp1, duk__bswaptmp2; \
-		duk__bswaptmp1 = (u)->ui[0]; \
-		duk__bswaptmp2 = (u)->ui[1]; \
-		duk__bswaptmp1 = DUK_BSWAP32(duk__bswaptmp1); \
-		duk__bswaptmp2 = DUK_BSWAP32(duk__bswaptmp2); \
-		(u)->ui[0] = duk__bswaptmp1; \
-		(u)->ui[1] = duk__bswaptmp2; \
-	} while (0)
-#elif defined(DUK_USE_DOUBLE_BE)
-#define DUK_DBLUNION_BSWAP(u) do { } while (0)
-#else
-#error internal error, double endianness insane
-#endif
 
 #endif  /* DUK_DBLUNION_H_INCLUDED */
 
