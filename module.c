@@ -2,11 +2,13 @@
 #include "module.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <errno.h>
 
+// Duktape.modSearch function, needed for loading modules with require()
 duk_ret_t module_search(duk_context *ctx) {
     const char *id = duk_require_string(ctx, 0);
-    bool found = false;
 
+    // C modules: add functions to exports variable (3rd argument) and return undefined
     for (int i = 0; i < c_module_count; i++) {
 	if (!strcmp(c_module_list[i].name, id)) {
 	    duk_push_c_function(ctx, c_module_list[i].init_func, 0);
@@ -16,11 +18,12 @@ duk_ret_t module_search(duk_context *ctx) {
 		duk_put_prop(ctx, 2);
 	    }
 	    duk_pop_2(ctx);
-	    found = true;
-	    break;
+	    return 0;
 	}
     }
 
+    // JS modules: return source code as a string
+    // Read from file "modname.js.tns"
     int module_filename_len = strlen(id) + strlen(".js.tns") + 1;
     char *module_filename = malloc(module_filename_len);
     if (!module_filename) goto error;
@@ -44,10 +47,6 @@ duk_ret_t module_search(duk_context *ctx) {
     return 1;
     
 error:
-    if (!found) {
-	duk_push_string(ctx, "module not found:");
-	duk_throw(ctx);
-    }
-
-    return 0;
+    duk_push_error_object(ctx, DUK_ERR_ERROR, "module %s not found: %s", id, strerror(errno));
+    duk_throw(ctx);
 }
