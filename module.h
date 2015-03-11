@@ -20,7 +20,6 @@
 #define MODULE_H
 
 #include "duktape.h"
-#include "hello.h"
 #include "fs.h"
 #include "nsp_keys.h"
 
@@ -32,7 +31,6 @@ struct c_module {
 };
 
 static const struct c_module c_module_list[] = {
-    {"hello", dukopen_hello, NULL, 0},
     {"fs", dukopen_fs, NULL, 0},
     {"nsp/keys", dukopen_nsp_keys, NULL, 0},
     {NULL, NULL, NULL, 0}
