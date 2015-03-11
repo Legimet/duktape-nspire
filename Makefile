@@ -3,8 +3,8 @@ DEBUG = FALSE
 GCC = nspire-gcc
 GENZEHN = genzehn
 
-GCCFLAGS = -std=gnu11 -Wall -W -marm -fstrict-aliasing -fomit-frame-pointer
-LDFLAGS = -Wl,--nspireio
+GCCFLAGS = -std=gnu11 -Wall -W -marm -fstrict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections
+LDFLAGS = -Wl,--gc-sections,--nspireio
 ZEHNFLAGS = --name "Duktape"
 
 ifeq ($(DEBUG),FALSE)
@@ -22,6 +22,9 @@ vpath %.elf $(DISTDIR)
 all: $(EXE).tns
 
 %.o: %.c
+	$(GCC) $(GCCFLAGS) -c $< -o $@
+
+module.o: module.c module.h
 	$(GCC) $(GCCFLAGS) -c $< -o $@
 
 $(EXE).elf: $(OBJS)

@@ -1,4 +1,4 @@
-// Module search function
+// Keys module
 // Copyright (C) 2015 Legimet
 //
 // This file is part of Duktape-nspire.
@@ -16,30 +16,11 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with Duktape-nspire. If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef MODULE_H
-#define MODULE_H
+#ifndef NSP_H
+#define NSP_H
 
 #include "duktape.h"
-#include "hello.h"
-#include "fs.h"
-#include "nsp_keys.h"
 
-struct c_module {
-    const char *name;
-    duk_ret_t (*init_func)(duk_context*);
-    const char **deps;
-    const int deps_count;
-};
-
-static const struct c_module c_module_list[] = {
-    {"hello", dukopen_hello, NULL, 0},
-    {"fs", dukopen_fs, NULL, 0},
-    {"nsp/keys", dukopen_nsp_keys, NULL, 0},
-    {NULL, NULL, NULL, 0}
-};
-
-static const int c_module_count = (sizeof(c_module_list) / sizeof(c_module_list[0])) - 1;
-
-duk_ret_t module_search(duk_context *ctx);
+duk_ret_t dukopen_nsp_keys(duk_context *ctx);
 
 #endif
