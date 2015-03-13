@@ -138,6 +138,48 @@ static duk_ret_t fs_mkdir(duk_context *ctx) {
     }
 }
 
+static bool fs_init_readdir_arr(duk_context *ctx) {
+    DIR *pdir;
+    struct dirent *pdirent;
+    bool success;
+
+    pdir = opendir(duk_require_string(ctx, 0));
+    if (pdir) {
+	duk_idx_t obj_idx = duk_push_array(ctx);
+	duk_uarridx_t idx = 0;
+	errno = 0;
+	do {
+	    errno = 0;
+	    if ((pdirent = readdir(pdir)) && strcmp(pdirent->d_name, ".") && strcmp(pdirent->d_name, "..")) {
+		duk_push_string(ctx, pdirent->d_name);
+		duk_put_prop_index(ctx, obj_idx, idx);
+	    }
+	    idx++;
+	} while (pdirent != NULL);
+	if (errno) {
+	    int e = errno;
+	    closedir(pdir);
+	    errno = e;
+	    success = false;
+	    duk_pop(ctx);
+	} else {
+	    closedir(pdir);
+	    success = true;
+	}
+    } else {
+	success = false;
+    }
+    return success;
+}
+
+static duk_ret_t fs_readdir(duk_context *ctx) {
+    return fs_err(ctx, fs_init_readdir_arr(ctx), 1, 2);
+}
+
+static duk_ret_t fs_readdir_sync(duk_context *ctx) {
+    return fs_err(ctx, fs_init_readdir_arr(ctx), DUK_INVALID_INDEX, 0);
+}
+
 static duk_ret_t fs_close(duk_context *ctx) {
     bool success = !close(duk_require_int(ctx, 0));
     return fs_err(ctx, success, 1, 1);
@@ -320,6 +362,8 @@ static const duk_function_list_entry fs_funcs[] = {
     {"rmdirSync", fs_rmdir, 1},
     {"mkdir", fs_mkdir, DUK_VARARGS},
     {"mkdirSync", fs_mkdir, DUK_VARARGS},
+    {"readdir", fs_readdir, 2},
+    {"readdirSync", fs_readdir_sync, 1},
     {"close", fs_close, 2},
     {"closeSync", fs_close, 1},
     {"open", fs_open, DUK_VARARGS},
@@ -328,12 +372,12 @@ static const duk_function_list_entry fs_funcs[] = {
 };
 
 duk_ret_t dukopen_fs(duk_context *ctx) {
-    duk_push_object(ctx);
-    duk_put_function_list(ctx, -1, fs_funcs);
+    duk_idx_t idx = duk_push_object(ctx);
+    duk_put_function_list(ctx, idx, fs_funcs);
     duk_push_c_function(ctx, fs_stats_constructor, 0);
-    duk_push_object(ctx);
-    duk_put_function_list(ctx, -1, fs_stats_methods);
-    duk_put_prop_string(ctx, -2, "prototype");
-    duk_put_prop_string(ctx, -2, "Stats");
+    duk_idx_t stats = duk_push_object(ctx);
+    duk_put_function_list(ctx, stats, fs_stats_methods);
+    duk_put_prop_string(ctx, idx, "prototype");
+    duk_put_prop_string(ctx, idx, "Stats");
     return 1;
 }

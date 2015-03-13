@@ -209,11 +209,11 @@ static const duk_function_list_entry nsp_keys_funcs[] = {
 };
 
 duk_ret_t dukopen_nsp_keys(duk_context *ctx) {
-    duk_push_object(ctx);
-    duk_put_function_list(ctx, -1, nsp_keys_funcs);
+    duk_idx_t idx = duk_push_object(ctx);
+    duk_put_function_list(ctx, idx, nsp_keys_funcs);
     for (unsigned int i = 0; i < sizeof(nsp_key_consts) / sizeof(struct nsp_key); i++) {
 	duk_push_int(ctx, i);
-	duk_put_prop_string(ctx, -2, nsp_key_consts[i].key_name);
+	duk_put_prop_string(ctx, idx, nsp_key_consts[i].key_name);
     }
     return 1;
 }
