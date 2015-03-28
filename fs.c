@@ -374,10 +374,10 @@ static const duk_function_list_entry fs_funcs[] = {
 duk_ret_t dukopen_fs(duk_context *ctx) {
     duk_idx_t idx = duk_push_object(ctx);
     duk_put_function_list(ctx, idx, fs_funcs);
-    duk_push_c_function(ctx, fs_stats_constructor, 0);
-    duk_idx_t stats = duk_push_object(ctx);
-    duk_put_function_list(ctx, stats, fs_stats_methods);
-    duk_put_prop_string(ctx, idx, "prototype");
+    duk_idx_t stats_constr = duk_push_c_function(ctx, fs_stats_constructor, 0);
+    duk_idx_t stats_prot = duk_push_object(ctx);
+    duk_put_function_list(ctx, stats_prot, fs_stats_methods);
+    duk_put_prop_string(ctx, stats_constr, "prototype");
     duk_put_prop_string(ctx, idx, "Stats");
     return 1;
 }
