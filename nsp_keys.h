@@ -16,8 +16,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with Duktape-nspire. If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef NSP_H
-#define NSP_H
+#ifndef NSP_KEYS_H
+#define NSP_KEYS_H
 
 #include "duktape.h"
 
