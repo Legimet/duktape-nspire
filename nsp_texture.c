@@ -29,12 +29,9 @@ static duk_ret_t nsp_texture_constructor(duk_context *ctx) {
 	duk_throw(ctx);
     }
     bool has_transparency;
-    int transparent_color;
+    uint16_t transparent_color;
     if ((has_transparency = duk_is_number(ctx, 2))) {
-	transparent_color = duk_get_int(ctx, 2);
-	if (0 > transparent_color || transparent_color > UINT16_MAX) {
-	    has_transparency = false;
-	}
+	transparent_color = (uint16_t)duk_get_int(ctx, 2);
     }
     duk_push_this(ctx);
     duk_push_fixed_buffer(ctx, width * height * 2);
@@ -79,11 +76,7 @@ duk_ret_t nsp_texture_display(duk_context *ctx) {
 }
 
 duk_ret_t nsp_texture_fill(duk_context *ctx) {
-    int color = duk_require_int(ctx, 0);
-    if (0 > color || color > UINT16_MAX) {
-	duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "color must be between 0x0000 and 0xffff");
-	duk_throw(ctx);
-    }
+    uint16_t color = duk_require_int(ctx, 0);
     duk_push_this(ctx);
     duk_get_prop_string(ctx, -1, "bitmap");
     size_t size;
@@ -135,11 +128,7 @@ duk_ret_t nsp_texture_get_pixel(duk_context *ctx) {
 duk_ret_t nsp_texture_set_pixel(duk_context *ctx) {
     int x = duk_require_int(ctx, 0);
     int y = duk_require_int(ctx, 1);
-    int color = duk_require_int(ctx, 2);
-    if (0 > color || color > UINT16_MAX) {
-	duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "color must be between 0x0000 and 0xffff");
-	duk_throw(ctx);
-    }
+    uint16_t color = duk_require_int(ctx, 2);
     duk_push_this(ctx);
     duk_get_prop_string(ctx, -1, "width");
     int w = duk_require_int(ctx, -1);
