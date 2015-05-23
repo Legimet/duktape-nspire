@@ -27,18 +27,15 @@
 struct c_module {
     const char *name;
     duk_ret_t (*init_func)(duk_context*);
-    const char **deps;
-    const int deps_count;
 };
 
 static const struct c_module c_module_list[] = {
-    {"fs", dukopen_fs, NULL, 0},
-    {"nsp/keys", dukopen_nsp_keys, NULL, 0},
-    {"nsp/texture", dukopen_nsp_texture, NULL, 0},
-    {NULL, NULL, NULL, 0}
+    {"fs", dukopen_fs},
+    {"nsp/keys", dukopen_nsp_keys},
+    {"nsp/texture", dukopen_nsp_texture}
 };
 
-static const int c_module_count = (sizeof(c_module_list) / sizeof(c_module_list[0])) - 1;
+static const int c_module_count = (sizeof(c_module_list) / sizeof(c_module_list[0]));
 
 duk_ret_t module_search(duk_context *ctx);
 
