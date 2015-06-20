@@ -1,4 +1,4 @@
-# Duktape-nspire 0.1 #
+# Duktape-nspire 0.1.1 #
 
 Duktape-nspire provides a JavaScript (ECMAScript) interpreter for the TI-Nspire handheld calculator.
 It combines the [Duktape](https://github.com/svaarala/duktape) Javascript engine with a set of
