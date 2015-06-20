@@ -96,12 +96,15 @@ int main(int argc, char **argv) {
     enable_relative_paths(argv); // Enable relative paths
 
     // Register .js file extension
-    if (argc > 1) {
-	char *dot = strrchr(argv[0], '.');
-	if (dot && dot != argv[0] && !strcmp(dot, ".tns")) {
-	    *dot = '\0';
-	    cfg_register_fileext("js", argv[0]);
-	    *dot = '.';
+    if (argc > 0) {
+	char *ptr = strrchr(argv[0], '/');
+	if (ptr++) {
+	    char *dot = strrchr(ptr, '.');
+	    if (dot && dot != ptr && !strcmp(dot, ".tns")) {
+		*dot = '\0';
+		cfg_register_fileext("js", ptr);
+		*dot = '.';
+	    }
 	}
     }
 
