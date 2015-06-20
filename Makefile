@@ -6,7 +6,7 @@ GENZEHN = genzehn
 
 GCCFLAGS = -std=gnu11 -Wall -W -marm -fstrict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -DVERSION=$(VERSION)
 LDFLAGS = -Wl,--gc-sections,--nspireio
-ZEHNFLAGS = --name "Duktape"
+ZEHNFLAGS = --name "Duktape-nspire" --author "Legimet" --notice "JavaScript (ECMAScript) interpreter using Duktape"
 
 ifeq ($(DEBUG),FALSE)
 	GCCFLAGS += -O3
