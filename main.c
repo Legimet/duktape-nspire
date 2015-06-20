@@ -23,9 +23,6 @@
 #include <stdbool.h>
 #include <libndls.h>
 
-#define xstr(a) str(a)
-#define str(a) #a
-
 duk_context *ctx;
 
 // Push stack of Error object at -1, remove the Error object
@@ -60,8 +57,8 @@ int handle_file(char *path) {
 int handle_repl(void) {
     char input[256];
 
-    printf("Duktape-nspire " xstr(VERSION) ", using Duktape %ld.%ld.%ld\n",
-	    DUK_VERSION / 10000, (DUK_VERSION / 100) % 100, DUK_VERSION % 100);
+    puts("Duktape-nspire " VERSION "\nBuilt on " BUILD_DATE ", using Duktape " DUK_GIT_DESCRIBE);
+
     while (true) {
 	printf("> ");
 	fflush(stdout);

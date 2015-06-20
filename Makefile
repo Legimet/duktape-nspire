@@ -1,10 +1,13 @@
-VERSION = 0.1
+VERSION_SHORT = 0.1
 DEBUG = FALSE
 
 GCC = nspire-gcc
 GENZEHN = genzehn
 
-GCCFLAGS = -std=gnu11 -Wall -W -marm -fstrict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -DVERSION=$(VERSION)
+BUILD_DATE = $(shell date '+%Y-%m-%d')
+VERSION = $(shell git describe --always --dirty 2> /dev/null || echo $(VERSION_SHORT))
+GCCFLAGS = -std=gnu11 -Wall -W -marm -fstrict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections \
+	   -DBUILD_DATE=\"$(BUILD_DATE)\" -DVERSION=\"$(VERSION)\"
 LDFLAGS = -Wl,--gc-sections,--nspireio
 ZEHNFLAGS = --name "Duktape-nspire" --author "Legimet" --notice "JavaScript (ECMAScript) interpreter using Duktape"
 
