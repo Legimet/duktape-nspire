@@ -1,9 +1,10 @@
+VERSION = 0.1
 DEBUG = FALSE
 
 GCC = nspire-gcc
 GENZEHN = genzehn
 
-GCCFLAGS = -std=gnu11 -Wall -W -marm -fstrict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections
+GCCFLAGS = -std=gnu11 -Wall -W -marm -fstrict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections -DVERSION=$(VERSION)
 LDFLAGS = -Wl,--gc-sections,--nspireio
 ZEHNFLAGS = --name "Duktape"
 
