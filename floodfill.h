@@ -1,9 +1,28 @@
 #ifndef __FLOOD_FILL_H__
 #define __FLOOD_FILL_H__ 1
 
+// Floodfill algorithm for drawing module
+// Copyright (C) 2015 fgalliat (Xtase)
+//
+// This file is part of Duktape-nspire.
+//
+// Duktape-nspire is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Duktape-nspire is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with Duktape-nspire. If not, see <http://www.gnu.org/licenses/>.
+
+
+
  /***************************************
  * Flood fill : non recursive algorithm *
- *                                      *
  ***************************************/
 
   // later look at : http://www.codeproject.com/Articles/6017/QuickFill-An-efficient-flood-fill-algorithm

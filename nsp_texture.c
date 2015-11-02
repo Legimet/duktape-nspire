@@ -1,5 +1,5 @@
 // Texture module
-// Copyright (C) 2015 Legimet
+// Copyright (C) 2015 Legimet + fgalliat (Xtase)
 //
 // This file is part of Duktape-nspire.
 //
