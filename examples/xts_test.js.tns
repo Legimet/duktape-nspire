@@ -1,0 +1,67 @@
+// Xtase drawing routines demo
+
+var t = require('nsp/texture');
+var k = require('nsp/keys');
+
+var width = 320;
+var height = 240;
+
+var screen = new t.Texture(width, height);
+screen.fill(0x0000);
+
+
+print(width+"x"+height+" press Enter");
+k.waitKeyPressed();
+
+
+
+var time_start = Date.now();
+screen.fill(0x0000);
+
+
+var RED   = 31 << 11 |  0 << 5 |   0;
+var GREEN =  0 << 11 | 31 << 5 |   0;
+var BLUE  =  0 << 11 |  0 << 5 |  31;
+var PINK  = 31 << 11 |  0 << 5 |  31;
+
+
+//                                   R        G       B
+screen.drawLine(0,0,width,height, 31 << 11 | 31 << 5 | 31 );
+
+screen.drawRect(50,50,100,70, RED );
+screen.fillRect(50+20,50+20,100,70, GREEN );
+
+var pts = [ 200, 40,//
+				220, 60,//
+				220, 80,//
+				200, 120,//
+				180, 80, //
+		];
+// screen.drawPolyLines(pts, pts.length/2, GREEN);
+screen.fillPolygon(pts, pts.length / 2, BLUE);
+
+pts = [ 200, 40,//
+				220 + 30, 60,//
+				220 + 30, 80,//
+				200 + 30, 120,//
+				180 + 30, 80, //
+				210 + 30, 70, //
+		];
+screen.fillPolygon(pts, pts.length / 2, GREEN);
+screen.drawPolyLines(pts, pts.length/2, RED);
+
+
+var SCREEN_WIDTH = width;
+var SCREEN_HEIGHT = height;
+
+screen.drawCircle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 20, RED);
+screen.fillCircle(SCREEN_WIDTH - 10, SCREEN_HEIGHT / 2, 20, PINK);
+
+for(var i=0; i < SCREEN_WIDTH / 40; i++) {
+  screen.fillCircle( (i*40)+20, SCREEN_HEIGHT -40, 20, PINK);
+}
+
+screen.display();
+
+print(width+"x"+height+" in "+(Date.now()-time_start)+" msec.");
+k.waitKeyPressed();
