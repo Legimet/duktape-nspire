@@ -25,14 +25,14 @@
 #include "nsp_texture.h"
 
 struct c_module {
-    const char *name;
-    duk_ret_t (*init_func)(duk_context*);
+	const char *name;
+	duk_ret_t (*init_func)(duk_context*);
 };
 
 static const struct c_module c_module_list[] = {
-    {"fs", dukopen_fs},
-    {"nsp/keys", dukopen_nsp_keys},
-    {"nsp/texture", dukopen_nsp_texture}
+	{"fs", dukopen_fs},
+	{"nsp/keys", dukopen_nsp_keys},
+	{"nsp/texture", dukopen_nsp_texture}
 };
 
 static const int c_module_count = (sizeof(c_module_list) / sizeof(c_module_list[0]));
