@@ -26,7 +26,7 @@
 duk_context *ctx;
 
 // Push stack of Error object at -1, remove the Error object
-duk_ret_t get_error_stack(duk_context *ctx) {
+duk_ret_t get_error_stack(duk_context *ctx, __attribute__((unused)) void *udata) {
 	if (duk_is_error(ctx, -1) && duk_has_prop_string(ctx, -1, "stack")) {
 		duk_get_prop_string(ctx, -1, "stack");
 		duk_remove(ctx, -2);
@@ -36,7 +36,7 @@ duk_ret_t get_error_stack(duk_context *ctx) {
 
 // Print stack of Error, remove the Error object
 void print_pop_error(void) {
-	duk_safe_call(ctx, get_error_stack, 1, 1);
+	duk_safe_call(ctx, get_error_stack, NULL, 1, 1);
 	fprintf(stderr, "%s\n", duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 }
