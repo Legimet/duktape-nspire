@@ -17,6 +17,7 @@
 // along with Duktape-nspire. If not, see <http://www.gnu.org/licenses/>.
 
 #include "duktape.h"
+#include "duk_print_alert.h"
 #include "module.h"
 #include "misc.h"
 #include <stdio.h>
@@ -125,6 +126,8 @@ int main(int argc, char **argv) {
 		cleanup();
 		return EXIT_FAILURE;
 	}
+
+	duk_print_alert_init(ctx, 0); // Needed for print/alert
 
 	// Add modSearch function for module loading support
 	duk_push_global_object(ctx);
