@@ -104,6 +104,12 @@ void cleanup(void) {
 	duk_destroy_heap(ctx);
 }
 
+void fatal_error_handler(__attribute__((unused)) void *udata, const char *msg) {
+	fputs("*** FATAL ERROR", stderr);
+	if (msg) fputs(msg, stderr);
+	fputc('\n', stderr);
+}
+
 int main(int argc, char **argv) {
 	enable_relative_paths(argv); // Enable relative paths
 
@@ -121,9 +127,9 @@ int main(int argc, char **argv) {
 	}
 
 	// Initialize Duktape heap and register cleanup with atexit
-	ctx = duk_create_heap_default();
-	if (atexit(cleanup)) {
-		cleanup();
+	ctx = duk_create_heap(NULL, NULL, NULL, NULL, fatal_error_handler);
+	if (!ctx) {
+		fputs("Failed to create heap\n", stderr);
 		return EXIT_FAILURE;
 	}
 
@@ -136,19 +142,23 @@ int main(int argc, char **argv) {
 	duk_put_prop_string(ctx, -2, "modSearch");
 	duk_pop_2(ctx);
 
+	int ret = EXIT_SUCCESS;
 	if (argc <= 1) {
 		if (handle_repl()) {
 			wait_key_pressed();
-			return EXIT_FAILURE;
+			ret = EXIT_FAILURE;
 		}
 	} else {
 		for (int i = 1; i < argc; i++) {
 			if (handle_file(argv[i])) {
 				wait_key_pressed();
-				return EXIT_FAILURE;
+				ret = EXIT_FAILURE;
+				break;
 			}
 		}
 	}
 
-	return 0;
+	duk_destroy_heap(ctx);
+
+	return ret;
 }
