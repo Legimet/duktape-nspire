@@ -31,8 +31,7 @@ static duk_ret_t nsp_texture_constructor(duk_context *ctx) {
 	int width = duk_require_int(ctx, 0);
 	int height = duk_require_int(ctx, 1);
 	if (width < 1 || height < 1) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "Width and height must be positive");
-		duk_throw(ctx);
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "Width and height must be positive");
 	}
 	bool has_transparency;
 	uint16_t transparent_color;
@@ -64,19 +63,15 @@ duk_ret_t nsp_texture_display(duk_context *ctx) {
 	int height = duk_get_int(ctx, -1);
 	duk_pop(ctx);
 	duk_get_prop_string(ctx, -1, "transparentColor");
-	if (width != 320 || height != 240 || !duk_is_null(ctx, -1)) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "must have dimensions 230x240 without transparency");
-		duk_throw(ctx);
-	}
+	if (width != 320 || height != 240 || !duk_is_null(ctx, -1))
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "must have dimensions 230x240 without transparency");
 	duk_pop(ctx);
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap;
 	bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL || size != 320 * 240 * 2) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap buffer does not match with dimensions");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL || size != 320 * 240 * 2)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap buffer does not match with dimensions");
 	memcpy(SCREEN_BASE_ADDRESS, bitmap, 320 * 240 * 2);
 	return 0;
 }
@@ -87,10 +82,8 @@ duk_ret_t nsp_texture_fill(duk_context *ctx) {
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 	for (size_t i = 0; i < size / 2; i++) {
 		bitmap[i] = (uint16_t)color;
 	}
@@ -109,26 +102,20 @@ duk_ret_t nsp_texture_get_pixel(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	if (0 <= x && x < w && 0 <= y && y < h && size >= (size_t)(w * h * 2)) {
 		duk_push_int(ctx, bitmap[w * y + x]);
 		return 1;
-	} else {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "coordinates out of range");
-		duk_throw(ctx);
-	}
+	} else
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "coordinates out of range");
 }
 
 duk_ret_t nsp_texture_set_pixel(duk_context *ctx) {
@@ -143,26 +130,20 @@ duk_ret_t nsp_texture_set_pixel(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	if (0 <= x && x < w && 0 <= y && y < h && size >= (size_t)(w * h * 2)) {
 		bitmap[w * y + x] = (uint16_t)color;
 		return 0;
-	} else {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "coordinates out of range");
-		duk_throw(ctx);
-	}
+	} else
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "coordinates out of range");
 }
 
 // ====== Xtase drawing routines ======
@@ -184,18 +165,14 @@ duk_ret_t nsp_texture_draw_line(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	FbDev* fb = (FbDev*)malloc( 1 * sizeof(FbDev) );
 	fb->width = w;
@@ -227,18 +204,14 @@ duk_ret_t nsp_texture_draw_rect(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	FbDev* fb = (FbDev*)malloc( 1 * sizeof(FbDev) );
 	fb->width = w;
@@ -268,18 +241,14 @@ duk_ret_t nsp_texture_fill_rect(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	FbDev* fb = (FbDev*)malloc( 1 * sizeof(FbDev) );
 	fb->width = w;
@@ -308,7 +277,6 @@ int* getIntArray(duk_context *ctx, int stackIndex) {
 		while (duk_next(ctx, -1, 1)) {
 			// in JS/duktape toto[1] <=> toto["1"]
 			// that's why keys are strings
-			const char* k = duk_to_string(ctx, -2);
 			int v = duk_to_int(ctx, -1);
 			//printf("key=%s, value=%d\n", k, v);
 			result[idx++] = v;
@@ -344,18 +312,14 @@ duk_ret_t nsp_texture_draw_polyLines(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	FbDev* fb = (FbDev*)malloc( 1 * sizeof(FbDev) );
 	fb->width = w;
@@ -386,18 +350,14 @@ duk_ret_t nsp_texture_fill_polygon(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	FbDev* fb = (FbDev*)malloc( 1 * sizeof(FbDev) );
 	fb->width = w;
@@ -425,18 +385,14 @@ duk_ret_t nsp_texture_draw_circle(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	FbDev* fb = (FbDev*)malloc( 1 * sizeof(FbDev) );
 	fb->width = w;
@@ -464,18 +420,14 @@ duk_ret_t nsp_texture_fill_circle(duk_context *ctx) {
 	int h = duk_require_int(ctx, -1);
 	duk_pop(ctx);
 
-	if (w <= 0 || h <= 0) {
-		duk_push_error_object(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
-		duk_throw(ctx);
-	}
+	if (w <= 0 || h <= 0)
+		return duk_error(ctx, DUK_ERR_RANGE_ERROR, "width and height must be positive");
 
 	duk_get_prop_string(ctx, -1, "bitmap");
 	size_t size;
 	uint16_t *bitmap = duk_get_buffer(ctx, -1, &size);
-	if (bitmap == NULL) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
-		duk_throw(ctx);
-	}
+	if (bitmap == NULL)
+		return duk_error(ctx, DUK_ERR_ERROR, "bitmap pointer is NULL");
 
 	FbDev* fb = (FbDev*)malloc( 1 * sizeof(FbDev) );
 	fb->width = w;

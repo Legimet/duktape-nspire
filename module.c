@@ -65,6 +65,5 @@ duk_ret_t module_search(duk_context *ctx) {
 	return 1;
 
 error:
-	duk_push_error_object(ctx, DUK_ERR_ERROR, "module %s not found: %s", id, strerror(errno));
-	duk_throw(ctx);
+	return duk_error(ctx, DUK_ERR_ERROR, "module %s not found: %s", id, strerror(errno));
 }

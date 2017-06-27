@@ -61,7 +61,7 @@ static duk_ret_t fs_err(duk_context *ctx, bool success, duk_idx_t callback, int 
 		}
 		duk_call(ctx, callback_args);
 	} else if (!success) {
-		duk_throw(ctx);
+		return duk_throw(ctx);
 	}
 	if (callback_args) {
 		return 0;
@@ -243,10 +243,8 @@ static duk_ret_t fs_open(duk_context *ctx) {
 	const char *flags_str = duk_require_string(ctx, 1);
 	int flags;
 
-	if (!fs_open_get_flags(flags_str, &flags)) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "Unknown file open flag: %s", flags_str);
-		duk_throw(ctx);
-	}
+	if (!fs_open_get_flags(flags_str, &flags))
+		return duk_error(ctx, DUK_ERR_ERROR, "Unknown file open flag: %s", flags_str);
 
 	mode_t mode;
 	duk_idx_t callback;
@@ -272,10 +270,8 @@ static duk_ret_t fs_open_sync(duk_context *ctx) {
 	const char *flags_str = duk_require_string(ctx, 1);
 	int flags;
 
-	if (!fs_open_get_flags(flags_str, &flags)) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "Unknown file open flag: %s", flags_str);
-		duk_throw(ctx);
-	}
+	if (!fs_open_get_flags(flags_str, &flags))
+		return duk_error(ctx, DUK_ERR_ERROR, "Unknown file open flag: %s", flags_str);
 
 	mode_t mode;
 	if (duk_is_number(ctx, 2)) {

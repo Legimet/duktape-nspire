@@ -176,10 +176,8 @@ static duk_ret_t nsp_keys_any_key_pressed(__attribute__((unused)) duk_context *c
 
 static duk_ret_t nsp_keys_is_key_pressed(duk_context *ctx) {
 	int k = duk_require_int(ctx, 0);
-	if (k < 0 || (unsigned int)k >= sizeof(nsp_key_consts) / sizeof(struct nsp_key)) {
-		duk_push_error_object(ctx, DUK_ERR_ERROR, "invalid key: %d", k);
-		duk_throw(ctx);
-	}
+	if (k < 0 || (unsigned int)k >= sizeof(nsp_key_consts) / sizeof(struct nsp_key))
+		return duk_error(ctx, DUK_ERR_ERROR, "invalid key: %d", k);
 	duk_push_boolean(ctx, isKeyPressed(*(nsp_key_consts[k].key_val)));
 	return 1;
 }
