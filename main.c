@@ -18,6 +18,7 @@
 
 #include "duktape.h"
 #include "module.h"
+#include "misc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -41,13 +42,23 @@ void print_pop_error(void) {
 	duk_pop(ctx);
 }
 
+// Compile JS file
+duk_ret_t compile_file(duk_context *ctx, void *filename) {
+	push_file_contents(ctx, filename);
+	duk_push_string(ctx, filename);
+	duk_compile(ctx, DUK_COMPILE_SHEBANG);
+	return 1;
+}
+
 // Run JS file
 int handle_file(char *path) {
-	if (duk_pcompile_file(ctx, 0, path)) {
+	if (duk_safe_call(ctx, compile_file, path, 0, 1)) {
+		print_pop_error();
 		return 1;
 	}
 	duk_push_global_object(ctx);
 	if (duk_pcall_method(ctx, 0)) {
+		print_pop_error();
 		return 1;
 	}
 	return 0;
@@ -129,9 +140,7 @@ int main(int argc, char **argv) {
 		}
 	} else {
 		for (int i = 1; i < argc; i++) {
-			duk_push_string(ctx, argv[i]);
 			if (handle_file(argv[i])) {
-				print_pop_error();
 				wait_key_pressed();
 				return EXIT_FAILURE;
 			}
