@@ -21,6 +21,7 @@
 
 #include "duktape.h"
 
-duk_ret_t push_file_contents(duk_context *ctx, void *filename);
+void push_file_contents(duk_context *ctx, const char *filename);
+duk_ret_t push_file_contents_safe(duk_context *ctx, char *filename);
 
 #endif

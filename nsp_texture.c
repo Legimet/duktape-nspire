@@ -17,7 +17,6 @@
 // along with Duktape-nspire. If not, see <http://www.gnu.org/licenses/>.
 
 #include "duktape.h"
-#include <limits.h>
 #include <stdbool.h>
 #include <libndls.h>
 

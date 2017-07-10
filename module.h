@@ -35,8 +35,9 @@ static const struct c_module c_module_list[] = {
 	{"nsp/texture", dukopen_nsp_texture}
 };
 
-static const int c_module_count = (sizeof(c_module_list) / sizeof(c_module_list[0]));
+static const unsigned c_module_count = (sizeof(c_module_list) / sizeof(c_module_list[0]));
 
-duk_ret_t module_search(duk_context *ctx);
+duk_ret_t cb_resolve_module(duk_context *ctx);
+duk_ret_t cb_load_module(duk_context *ctx);
 
 #endif

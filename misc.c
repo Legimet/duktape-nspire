@@ -20,11 +20,8 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
-duk_ret_t push_file_contents(duk_context *ctx, void *filename) {
+void push_file_contents(duk_context *ctx, const char *filename) {
 	FILE *file = fopen(filename, "rb");
 	if (!file) goto error;
 	if (fseek(file, 0, SEEK_END)) goto error;
@@ -33,7 +30,7 @@ duk_ret_t push_file_contents(duk_context *ctx, void *filename) {
 	if (size == 0) {
 		fclose(file);
 		duk_push_lstring(ctx, NULL, 0);
-		return 1;
+		return;
 	}
 	if (fseek(file, 0, SEEK_SET)) goto error;
 	char *buf = duk_push_fixed_buffer(ctx, size);
@@ -43,10 +40,19 @@ duk_ret_t push_file_contents(duk_context *ctx, void *filename) {
 	}
 	fclose(file);
 	duk_buffer_to_string(ctx, -1);
-	return 1;
+	return;
 
 error:
 	if (file)
 		fclose(file);
-	return duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unable to read %s: %s", filename, strerror(errno));
+	(void) duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unable to read '%s': %s", filename, strerror(errno));
+}
+
+static duk_ret_t push_file_contents_wrapper(duk_context *ctx, void *filename) {
+	push_file_contents(ctx, filename);
+	return 1;
+}
+
+duk_ret_t push_file_contents_safe(duk_context *ctx, char *filename) {
+	return duk_safe_call(ctx, push_file_contents_wrapper, filename, 0, 1);
 }

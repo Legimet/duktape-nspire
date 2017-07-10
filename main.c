@@ -17,6 +17,7 @@
 // along with Duktape-nspire. If not, see <http://www.gnu.org/licenses/>.
 
 #include "duktape.h"
+#include "duk_module_node.h"
 #include "duk_print_alert.h"
 #include "module.h"
 #include "misc.h"
@@ -29,37 +30,28 @@ duk_context *ctx;
 
 // Push stack of Error object at -1, remove the Error object
 duk_ret_t get_error_stack(duk_context *ctx, __attribute__((unused)) void *udata) {
-	if (duk_is_error(ctx, -1) && duk_has_prop_string(ctx, -1, "stack")) {
-		duk_get_prop_string(ctx, -1, "stack");
+	if (duk_is_error(ctx, 0) && duk_has_prop_string(ctx, 0, "stack")) {
+		duk_get_prop_string(ctx, 0, "stack");
 		duk_remove(ctx, -2);
 	}
 	return 1;
 }
 
-// Print stack of Error, remove the Error object
-void print_pop_error(void) {
+// Print stack of Error
+void print_error(void) {
 	duk_safe_call(ctx, get_error_stack, NULL, 1, 1);
 	fprintf(stderr, "%s\n", duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 }
 
-// Compile JS file
-duk_ret_t compile_file(duk_context *ctx, void *filename) {
-	push_file_contents(ctx, filename);
-	duk_push_string(ctx, filename);
-	duk_compile(ctx, DUK_COMPILE_SHEBANG);
-	return 1;
-}
-
 // Run JS file
 int handle_file(char *path) {
-	if (duk_safe_call(ctx, compile_file, path, 0, 1)) {
-		print_pop_error();
+	if (push_file_contents_safe(ctx, path)) {
+		print_error();
 		return 1;
 	}
-	duk_push_global_object(ctx);
-	if (duk_pcall_method(ctx, 0)) {
-		print_pop_error();
+	if (duk_module_node_peval_main(ctx, path)) {
+		print_error();
 		return 1;
 	}
 	return 0;
@@ -69,7 +61,8 @@ int handle_file(char *path) {
 int handle_repl(void) {
 	char input[256];
 
-	puts("Duktape-nspire " VERSION "\nBuilt on " BUILD_DATE ", using Duktape " DUK_GIT_DESCRIBE);
+	puts("Duktape-nspire " VERSION "\n"
+	     "Built on " BUILD_DATE " with Duktape " DUK_GIT_DESCRIBE);
 
 	while (true) {
 		printf("> ");
@@ -86,12 +79,12 @@ int handle_repl(void) {
 			return 0;
 		}
 		if (duk_pcompile_string(ctx, 0, input)) {
-			print_pop_error();
+			print_error();
 			continue;
 		}
 		duk_push_global_object(ctx);
 		if (duk_pcall_method(ctx, 0)) {
-			print_pop_error();
+			print_error();
 			continue;
 		}
 		puts(duk_safe_to_string(ctx, -1));
@@ -106,8 +99,13 @@ void cleanup(void) {
 
 void fatal_error_handler(__attribute__((unused)) void *udata, const char *msg) {
 	fputs("*** FATAL ERROR", stderr);
-	if (msg) fputs(msg, stderr);
+	if (msg) {
+		fputs(": ", stderr);
+		fputs(msg, stderr);
+	}
 	fputc('\n', stderr);
+	wait_no_key_pressed();
+	abort();
 }
 
 int main(int argc, char **argv) {
@@ -133,14 +131,15 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	duk_print_alert_init(ctx, 0); // Needed for print/alert
+	// Module system - register the resolve and load functions
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, cb_resolve_module, DUK_VARARGS);
+	duk_put_prop_string(ctx, -2, "resolve");
+	duk_push_c_function(ctx, cb_load_module, DUK_VARARGS);
+	duk_put_prop_string(ctx, -2, "load");
+	duk_module_node_init(ctx);
 
-	// Add modSearch function for module loading support
-	duk_push_global_object(ctx);
-	duk_get_prop_string(ctx, -1, "Duktape");
-	duk_push_c_function(ctx, module_search, 4);
-	duk_put_prop_string(ctx, -2, "modSearch");
-	duk_pop_2(ctx);
+	duk_print_alert_init(ctx, 0); // Needed for print/alert
 
 	int ret = EXIT_SUCCESS;
 	if (argc <= 1) {
