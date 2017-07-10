@@ -7,8 +7,7 @@ GENZEHN = genzehn
 BUILD_DATE = $(shell date '+%Y-%m-%d')
 VERSION = $(shell git describe --always --dirty 2> /dev/null || echo $(VERSION_SHORT))
 GCCFLAGS = -std=gnu11 -Wall -Wextra -marm -fstrict-aliasing -fomit-frame-pointer -ffunction-sections -fdata-sections \
-	   -DBUILD_DATE=\"$(BUILD_DATE)\" -DVERSION=\"$(VERSION)\" -DOLD_SCREEN_API -Wno-implicit-fallthrough \
-	   -Wno-format-truncation
+	   -DBUILD_DATE=\"$(BUILD_DATE)\" -DVERSION=\"$(VERSION)\" -Wno-implicit-fallthrough -Wno-format-truncation
 LDFLAGS = -Wl,--gc-sections,--nspireio
 ZEHNFLAGS = --name "Duktape-nspire" --author "Legimet" --notice "JavaScript (ECMAScript) interpreter using Duktape"
 

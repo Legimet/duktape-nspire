@@ -71,7 +71,26 @@ duk_ret_t nsp_texture_display(duk_context *ctx) {
 	bitmap = duk_get_buffer(ctx, -1, &size);
 	if (bitmap == NULL || size != 320 * 240 * 2)
 		return duk_error(ctx, DUK_ERR_ERROR, "bitmap buffer does not match with dimensions");
-	memcpy(SCREEN_BASE_ADDRESS, bitmap, 320 * 240 * 2);
+
+	if (has_colors)
+		lcd_blit(bitmap, SCR_320x240_565);
+	else {
+		uint8_t buf[240*320/2];
+		uint8_t r[2], g[2], b[2], c[2];
+		for (unsigned i = 0; i < 240; i++) {
+			for (unsigned j = 0; j < 320/2; j++) {
+				for (unsigned k = 0; k < 2; k++) {
+					r[k] = bitmap[i*320+2*j+k] >> 12;
+					g[k] = (bitmap[i*320+2*j+k] >> 7) & 0xF;
+					b[k] = (bitmap[i*320+2*j+k] >> 1) & 0xF;
+					c[k] = (30*r[k] + 59*g[k] + 11*b[k]) / 100;
+				}
+				buf[i*320/2+j] = (c[0] << 4) | c[1];
+			}
+		}
+		lcd_blit(buf, SCR_320x240_4);
+	}
+
 	return 0;
 }
 
