@@ -19,6 +19,7 @@
 #include "duktape.h"
 #include "duk_module_node.h"
 #include "duk_print_alert.h"
+#include "duk_console.h"
 #include "module.h"
 #include "misc.h"
 #include <stdio.h>
@@ -26,10 +27,10 @@
 #include <stdbool.h>
 #include <libndls.h>
 
-duk_context *ctx;
+static duk_context *ctx;
 
 // Push stack of Error object at -1, remove the Error object
-duk_ret_t get_error_stack(duk_context *ctx, __attribute__((unused)) void *udata) {
+static duk_ret_t get_error_stack(duk_context *ctx, __attribute__((unused)) void *udata) {
 	if (duk_is_error(ctx, 0) && duk_has_prop_string(ctx, 0, "stack")) {
 		duk_get_prop_string(ctx, 0, "stack");
 		duk_remove(ctx, -2);
@@ -38,14 +39,14 @@ duk_ret_t get_error_stack(duk_context *ctx, __attribute__((unused)) void *udata)
 }
 
 // Print stack of Error
-void print_error(void) {
+static void print_error(void) {
 	duk_safe_call(ctx, get_error_stack, NULL, 1, 1);
 	fprintf(stderr, "%s\n", duk_safe_to_string(ctx, -1));
 	duk_pop(ctx);
 }
 
 // Run JS file
-int handle_file(char *path) {
+static int handle_file(char *path) {
 	if (push_file_contents_safe(ctx, path)) {
 		print_error();
 		return 1;
@@ -58,7 +59,7 @@ int handle_file(char *path) {
 }
 
 // REPL
-int handle_repl(void) {
+static int handle_repl(void) {
 	char input[256];
 
 	puts("Duktape-nspire " VERSION "\n"
@@ -92,12 +93,7 @@ int handle_repl(void) {
 	return 0;
 }
 
-// Cleanup at end
-void cleanup(void) {
-	duk_destroy_heap(ctx);
-}
-
-void fatal_error_handler(__attribute__((unused)) void *udata, const char *msg) {
+static void fatal_error_handler(__attribute__((unused)) void *udata, const char *msg) {
 	fputs("*** FATAL ERROR", stderr);
 	if (msg) {
 		fputs(": ", stderr);
@@ -140,6 +136,7 @@ int main(int argc, char **argv) {
 	duk_module_node_init(ctx);
 
 	duk_print_alert_init(ctx, 0); // Needed for print/alert
+	duk_console_init(ctx, 0); // console binding
 
 	int ret = EXIT_SUCCESS;
 	if (argc <= 1) {
