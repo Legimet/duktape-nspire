@@ -56,3 +56,29 @@ static duk_ret_t push_file_contents_wrapper(duk_context *ctx, void *filename) {
 duk_ret_t push_file_contents_safe(duk_context *ctx, char *filename) {
 	return duk_safe_call(ctx, push_file_contents_wrapper, filename, 0, 1);
 }
+
+struct args {const char *str; duk_size_t len;};
+
+static duk_ret_t safe_push_lstring(duk_context *ctx, void *udata) {
+	duk_push_lstring(ctx, ((struct args*)udata)->str, ((struct args*)udata)->len);
+	return 1;
+}
+
+duk_ret_t console_readline(duk_context *ctx) {
+	size_t n = 0;
+	char *line = NULL;
+	ssize_t len;
+	if ((len = __getline(&line, &n, stdin)) == -1) {
+		free(line);
+		goto failure;
+	}
+	struct args udata = {line, len - 1};
+	if (duk_safe_call(ctx, safe_push_lstring, &udata, 0, 1)) {
+		free(line);
+		return duk_throw(ctx);
+	}
+	return 1;
+
+failure:
+	return duk_generic_error(ctx, "Unable to read line: %s", strerror(errno));
+}

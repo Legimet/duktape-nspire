@@ -138,6 +138,11 @@ int main(int argc, char **argv) {
 	duk_print_alert_init(ctx, 0); // Needed for print/alert
 	duk_console_init(ctx, 0); // console binding
 
+	duk_get_global_string(ctx, "console");
+	duk_push_c_function(ctx, console_readline, 0);
+	duk_put_prop_string(ctx, -2, "readline");
+	duk_pop(ctx);
+
 	int ret = EXIT_SUCCESS;
 	if (argc <= 1) {
 		if (handle_repl()) {
