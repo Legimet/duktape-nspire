@@ -5,6 +5,14 @@ It combines the [Duktape](https://github.com/svaarala/duktape) Javascript engine
 Nspire-specific modules and module support, and a REPL (using
 [Nspire I/O](https://github.com/compujuckel/nspire-io.git) for its interface).
 
+## Usage
+The calculator must have Ndless installed. To get to the interactive Nspire I/O console, run Duktape
+directly from the document browser. Type `.exit` to exit.
+
+You can also run scripts with a .js extension from the document browser. The extension should be
+registered with `duktape`. This is done automatically the first time you run Duktape from the
+document browser, but you can also register it manually by editing `ndless.cfg.tns`.
+
 ## Modules
 
 The following modules are available right now:
